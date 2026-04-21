@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id                String            @id // Telegram ID
+  username          String?
+  onboardingData    String?           // JSON string of user answers
+  inferredTraits    String?           // JSON string (InferredUserProfile)
+  relationships     Relationship[]
+  matchmakerJobs    MatchmakerJob[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model Soul {
+  id                String            @id @default(uuid())
+  name              String
+  archetype         String
+  traits            String            // JSON string ({ warmth: number, complexity: number, agency: number, vulnerability: number, stability: number })
+  lexiconFavor      String            // e.g., "mechanical", "tactile"
+  appearance        String?
+  interests         String?           // JSON string
+  attractionProfile String            // JSON string (AttractionProfile interface)
+  boundaries        Boundary[]
+  relationships     Relationship[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model Relationship {
+  id                String            @id @default(uuid())
+  userId            String
+  soulId            String
+  affection         Int               @default(50) // 0-100
+  trust             Int               @default(50) // 0-100
+  status            String            @default("active") // active, archived, exited
+  user              User              @relation(fields: [userId], references: [id])
+  soul              Soul              @relation(fields: [soulId], references: [id])
+  memories          MemoryEntry[]
+  lastInteraction   DateTime          @default(now())
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@unique([userId, soulId])
+}
+
+model MemoryEntry {
+  id                String            @id @default(uuid())
+  relationshipId    String
+  content           String
+  interpretation    String            // The agent's subjective view
+  weight            Int               // 1-10
+  salienceFactor    Float             @default(2.5) // The "EF" equivalent
+  interval          Float             // Days until "forgotten"
+  lastReviewed      DateTime          @default(now())
+  isCore            Boolean           @default(false) // If weight == 10
+  relationship      Relationship      @relation(fields: [relationshipId], references: [id])
+  createdAt         DateTime          @default(now())
+}
+
+model Boundary {
+  id                String            @id @default(uuid())
+  soulId            String
+  type              String            // hard, soft, evolving
+  content           String
+  isViolated        Boolean           @default(false)
+  violationCount    Int               @default(0)
+  soul              Soul              @relation(fields: [soulId], references: [id])
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model MatchmakerJob {
+  id                String            @id @default(uuid())
+  userId            String
+  status            String            @default("reviewing") // reviewing, searching, refining, finalizing, completed, failed
+  progress          Int               @default(0) // 0-100
+  estimatedTime     DateTime?
+  message           String?           // Personalized message from the Matchmaker
+  results           String?           // JSON string of generated candidates
+  user              User              @relation(fields: [userId], references: [id])
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
