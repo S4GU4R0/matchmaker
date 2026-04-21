@@ -1,0 +1,11 @@
+{
+  "name": "telegram-bot",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx index.ts"
+  },
+  "dependencies": {
+    "grammy": "^1.30.0"
+  }
+}
