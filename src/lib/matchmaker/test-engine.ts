@@ -3,6 +3,7 @@ import { SoulGenerator } from './generator';
 import { SensoryLexicon } from './circumplex';
 import { Evaluator } from './evaluator';
 import { MatchmakerAgent } from './agent';
+import { Matchmaker } from './matchmaker';
 
 async function testCoreEngine() {
   console.log("--- Testing Soul Generation ---");
@@ -43,6 +44,22 @@ async function testCoreEngine() {
   );
   console.log("Agent response to positive message:", result.sensoryExpression);
   console.log("Updated metrics:", { affection: result.affection, trust: result.trust });
+
+  console.log("\n--- Testing Matchmaker Logic ---");
+  const userProfile = {
+    traits: { warmth: 7, curiosity: 8, commStyle: 'deep' as const, intensity: 6, stability: 7 },
+    preferences: { preferredSensations: ['Resonance'], riskTolerance: 'moderate' as const },
+    dealbreakers: []
+  };
+
+  const su = Matchmaker.calculateSu(soul as any, 'Resonance');
+  const sa = Matchmaker.calculateSa(soul as any, userProfile);
+  const sm = Matchmaker.calculateSm(su, sa);
+  console.log(`Matching Su: ${su.toFixed(1)}, Sa: ${sa.toFixed(1)}, Sm: ${sm.toFixed(1)}`);
+
+  const matches = await Matchmaker.findMatches(userProfile);
+  console.log(`Found ${matches.length} matches for Resonance preference.`);
+  matches.forEach((m, i) => console.log(`Match ${i+1}: ${m.name} (${m.archetype})`));
 
   console.log("\n--- Testing Sensory Lexicon ---");
   const coords = { valence: 0.8, arousal: 0.5 }; // Radiant quadrant
