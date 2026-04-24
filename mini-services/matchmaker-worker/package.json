@@ -1,0 +1,8 @@
+{
+  "name": "matchmaker-worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx index.ts"
+  }
+}
