@@ -102,13 +102,21 @@ export class Matchmaker {
     const matches: { soul: any; sm: number }[] = [];
     const preferredSensation = userProfile.preferences.preferredSensations[0] || 'Resonance';
 
+    let currentSmThreshold = 55;
+
     for (let i = 0; i < iterations; i++) {
+      // Every 8 iterations, slightly relax the SM threshold if we haven't found enough matches
+      if (i > 0 && i % 8 === 0 && matches.length < 3) {
+        currentSmThreshold = Math.max(45, currentSmThreshold - 5);
+      }
+
       const candidate = SoulGenerator.generateCandidate();
       const su = this.calculateSu(candidate, preferredSensation);
       const sa = this.calculateSa(candidate, userProfile);
       const sm = this.calculateSm(su, sa);
 
-      if (sm >= 55 && sa >= 50) {
+      // Never relax Sa (agent interest) or dealbreakers (Sa becomes 0)
+      if (sm >= currentSmThreshold && sa >= 50) {
         matches.push({ soul: candidate, sm });
       }
 

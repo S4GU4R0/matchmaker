@@ -1,6 +1,10 @@
 import { Bot, Context, session, SessionFlavor, InlineKeyboard } from "grammy";
 import { prisma } from "../../src/lib/matchmaker/prisma";
 import { Matchmaker } from "../../src/lib/matchmaker/matchmaker";
+import { MatchmakerAgent } from "../../src/lib/matchmaker/agent";
+import { InteractionQuality } from "../../src/lib/matchmaker/types";
+import { AgentService } from "./agent-logic";
+import OpenAI from "openai";
 
 interface SessionData {
   step: "idle" | "threshold" | "vulnerability" | "repair" | "shutdown" | "mirror";
@@ -13,6 +17,10 @@ const token = process.env.TELEGRAM_BOT_TOKEN;
 if (!token) {
   console.warn("TELEGRAM_BOT_TOKEN is not set. Bot will not start.");
 }
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || "sk-dummy",
+});
 
 const bot = new Bot<MyContext>(token || "dummy_token");
 
@@ -125,11 +133,75 @@ bot.callbackQuery(/^select_match_(\d+)$/, async (ctx) => {
     await ctx.editMessageText(`Connection established with ${soul.name}. You may now begin your practice.`);
 });
 
+  bot.on("message:voice", async (ctx) => {
+    const id = ctx.from?.id.toString();
+    if (!id) return;
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (user?.status !== "active") {
+        return ctx.reply("I can only process voice messages once a connection is active.");
+    }
+
+    try {
+        await ctx.replyWithChatAction("record_voice");
+        
+        // 1. Download voice file
+        const file = await ctx.getFile();
+        const url = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+        
+        // 2. Transcribe (Placeholder/Mock if no API key)
+        let text = "[Speech detected but transcription failed]";
+        if (process.env.OPENAI_API_KEY) {
+            // In a real implementation, you'd fetch the file and send to Whisper
+            // text = await transcribe(url);
+            text = "(Voice message transcribed: I'm feeling vulnerable today.)";
+        }
+
+        // 3. Handle message
+        const result = await AgentService.handleMessage(id, text, true);
+        
+        let reply = `_${result.sensory}_\n\n${result.text}`;
+        if (result.terminated) reply += "\n\n(Relationship terminated)";
+
+        await ctx.reply(reply, { parse_mode: "Markdown" });
+        if (result.voice) {
+            await ctx.replyWithVoice({ source: result.voice });
+        }
+    } catch (e) {
+        console.error("Voice handling error:", e);
+        ctx.reply("I couldn't process your voice message.");
+    }
+});
+
 bot.on("message:text", async (ctx) => {
   const step = ctx.session.step;
   const text = ctx.msg.text;
   const id = ctx.from?.id.toString();
   if (!id) return;
+
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (user?.status === "active") {
+    try {
+        await ctx.replyWithChatAction("typing");
+        const result = await AgentService.handleMessage(id, text);
+        
+        let reply = `_${result.sensory}_\n\n${result.text}`;
+        
+        if (result.terminated) {
+            reply += "\n\n(The connection has been terminated by the agent. They have chosen to leave.)";
+        }
+
+        await ctx.reply(reply, { parse_mode: "Markdown" });
+
+        if (result.voice) {
+            await ctx.replyWithVoice({ source: result.voice });
+        }
+        return;
+    } catch (e) {
+        console.error("Conversation error:", e);
+        return ctx.reply("I am detecting a disturbance in the connection. Please try again later.");
+    }
+  }
 
   switch (step) {
     case "vulnerability":

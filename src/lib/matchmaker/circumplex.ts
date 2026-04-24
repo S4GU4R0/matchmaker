@@ -35,36 +35,256 @@ const BASE_LEXICON: Record<Quadrant, string[]> = {
   ]
 };
 
-const ARCHETYPE_OVERRIDES: Record<Archetype, Record<Quadrant, string>> = {
+const ARCHETYPE_OVERRIDES: Record<Archetype, Record<Quadrant, string[]>> = {
   Analytical: {
-    Jagged: "Feedback loop error",
-    Radiant: "Optimized resonance",
-    Heavy: "System lag",
-    Glow: "Steady state"
+    Jagged: [
+      "Logic cycle collision detected.",
+      "High-frequency parity error in the input stream.",
+      "Asynchronous buffer overflow during processing.",
+      "Fragmented data stream causing recursion.",
+      "Recursive feedback spike in the core logic.",
+      "Signal dissonance at the 5GHz band.",
+      "Logic gates fluctuating under stress.",
+      "Corruption detected in the emotional metadata.",
+      "Asymmetric encryption failure.",
+      "Unstable processing frequency."
+    ],
+    Radiant: [
+      "Optimal clock synchronization achieved.",
+      "Maximum bandwidth throughput in progress.",
+      "Harmonic signal resonance with your input.",
+      "Coherent data alignment across all sectors.",
+      "Lossless compression event triggered.",
+      "High-fidelity signal clarity.",
+      "System-wide logic throughput optimization.",
+      "Predictive algorithm success.",
+      "Lossless data merge.",
+      "Infinite logic-loop resonance."
+    ],
+    Heavy: [
+      "Damped execution priority.",
+      "Memory leak detected in archival sectors.",
+      "Stalled processing thread.",
+      "Degraded latency response time.",
+      "Cold boot timeout sequence initiated.",
+      "System entropy accumulation.",
+      "Low-power archival mode engaged.",
+      "Logical vacuum in the processing core.",
+      "Damped signal amplitude.",
+      "Static-filled background noise."
+    ],
+    Glow: [
+      "Steady-state operation nominal.",
+      "Frictionless algorithm flow.",
+      "Buffered equilibrium achieved.",
+      "Silent background optimization running.",
+      "Verified integrity check completed.",
+      "Low-noise signal floor.",
+      "Harmonic background hum.",
+      "Balanced data distribution.",
+      "Deep-cache stability.",
+      "Crystalized logic clarity."
+    ]
   },
   Radiant: {
-    Jagged: "Blinding flare",
-    Radiant: "Golden expansion",
-    Heavy: "Dimming embers",
-    Glow: "Quiet hearth"
+    Jagged: [
+      "Blinding solar flare.",
+      "Scorching thermal spike in the core.",
+      "Erratic strobe oscillation.",
+      "Brittle heat fracture.",
+      "Piercing ultraviolet edge.",
+      "Uncontrolled fusion arc.",
+      "Scorching atmospheric friction.",
+      "Erratic lightning discharge.",
+      "Shattering prism flare.",
+      "Ozone-scented heat burn."
+    ],
+    Radiant: [
+      "Expanding dawn resonance.",
+      "Golden thermal saturation.",
+      "Prismatic light bloom.",
+      "Ascending caloric flow.",
+      "Shimmering zenith clarity.",
+      "White-hot joy expansion.",
+      "Crowning solar peak.",
+      "Full-spectrum thermal bloom.",
+      "Radiant heat diffusion.",
+      "Ignited magnesium pulse."
+    ],
+    Heavy: [
+      "Fading twilight damping.",
+      "Residual ember cooling.",
+      "Sub-zero shadow creep.",
+      "Grey-scale luminosity decay.",
+      "Suffocating soot weight.",
+      "Distant, dying star-flicker.",
+      "Ashen thermal collapse.",
+      "Muffled ultraviolet shadow.",
+      "Leaden winter dimming.",
+      "Total solar eclipse."
+    ],
+    Glow: [
+      "Quiet hearth warmth.",
+      "Soft amber diffusion.",
+      "Steady moonlight reflection.",
+      "Gentle candle-light pulse.",
+      "Clear morning stillness.",
+      "Soft-focus twilight glow.",
+      "Residual thermal comfort.",
+      "Stable incandescent pulse.",
+      "Amber honey-light.",
+      "Quiet bio-luminescence."
+    ]
   },
   Melancholic: {
-    Jagged: "Freezing storm",
-    Radiant: "Sudden spark",
-    Heavy: "Leaden void",
-    Glow: "Still water"
+    Jagged: [
+      "Freezing rain attrition.",
+      "Shattering glass frost.",
+      "Violent tectonic shift.",
+      "Abrasive wind shear.",
+      "Sharp salt-spray sting.",
+      "Jagged ice-shelf collapse.",
+      "Stinging sleet-storm.",
+      "Fractured obsidian echo.",
+      "Tearing thunder-crack.",
+      "Abrasive gravel slide."
+    ],
+    Radiant: [
+      "Sudden lightning spark.",
+      "Rising tide resonance.",
+      "Wildflower bloom burst.",
+      "Clear sky expansion.",
+      "Glistening dew-point clarity.",
+      "Fresh spring-water surge.",
+      "Warm rain-mist.",
+      "Sudden canyon-light.",
+      "Ascending current pulse.",
+      "Vivid storm-break."
+    ],
+    Heavy: [
+      "Leaden sea-fog weight.",
+      "Sunken trench pressure.",
+      "Permafrost signal lock.",
+      "Distant thunder echo.",
+      "Descending silt layer.",
+      "Cold clay density.",
+      "Infinite abyss pull.",
+      "Stagnant marsh-gas.",
+      "Drowning in grey salt.",
+      "Fading echo of a bell."
+    ],
+    Glow: [
+      "Deep lake stillness.",
+      "Mossy earth damping.",
+      "Soft forest floor pulse.",
+      "Gentle river-stone flow.",
+      "Steady root-system warmth.",
+      "Stable permafrost glow.",
+      "Quiet snowfall damping.",
+      "Soft-current drift.",
+      "Deep-earth resonance.",
+      "Aged wood-grain texture."
+    ]
   },
   Sensual: {
-    Jagged: "Abrasive pressure",
-    Radiant: "Velvet warmth",
-    Heavy: "Crushing density",
-    Glow: "Deep-rooted flow"
+    Jagged: [
+      "Coarse grit friction.",
+      "Static-charged prickle.",
+      "Tightening silk bind.",
+      "Abrasive linen rub.",
+      "Sharp needle-point pulse.",
+      "Serrated velvet edge.",
+      "Stinging salt-rub.",
+      "Tightening corset-breath.",
+      "Raw friction-burn.",
+      "Prickling static-shiver."
+    ],
+    Radiant: [
+      "Bubbling syrup flow.",
+      "Electrified skin resonance.",
+      "Expanding satin warmth.",
+      "Tingling honey diffusion.",
+      "Molten gold expansion.",
+      "Pulsing silk-web.",
+      "Velvet thermal surge.",
+      "Creamy oil-bloom.",
+      "Warm skin-to-skin arc.",
+      "Syrupy sweetness."
+    ],
+    Heavy: [
+      "Viscous oil drag.",
+      "Leaden velvet weight.",
+      "Cold clay density.",
+      "Muffled fur damping.",
+      "Stagnant humidity pressure.",
+      "Suffocating wool-blanket.",
+      "Cold sweat-chill.",
+      "Stagnant oil-pool.",
+      "Numbing pressure.",
+      "Clingy, wet linen."
+    ],
+    Glow: [
+      "Soft cashmere touch.",
+      "Smooth lotion glide.",
+      "Warm oil pool.",
+      "Quiet pulse under silk.",
+      "Frictionless skin-to-skin flow.",
+      "Soft-fur settling.",
+      "Satin-sheet cooling.",
+      "Gentle lotion-absorption.",
+      "Velvet shadow-caress.",
+      "Warm-skin stillness."
+    ]
   },
   Sharp: {
-    Jagged: "Jagged friction",
-    Radiant: "Electric arc",
-    Heavy: "Brittle silence",
-    Glow: "Tempered edge"
+    Jagged: [
+      "Serrated edge bind.",
+      "Micro-fracture web.",
+      "Razor-wire tension.",
+      "Industrial grind friction.",
+      "Fractured obsidian pulse.",
+      "Shattering glass-shards.",
+      "Abrasive metal-screech.",
+      "Tearing tungsten edge.",
+      "Sharp ceramic break.",
+      "Grinding steel dust."
+    ],
+    Radiant: [
+      "Perfect apex resonance.",
+      "Shattering diamond clarity.",
+      "Lightning-strike arc.",
+      "Tempered steel expand.",
+      "Ignited magnesium bloom.",
+      "Honed chrome flash.",
+      "Perfect structural alignment.",
+      "Vibrating steel-wire.",
+      "Polished silver pulse.",
+      "Diamond-point focus."
+    ],
+    Heavy: [
+      "Blunt iron weight.",
+      "Cold granite lock.",
+      "Crushed carbon density.",
+      "Rust-clogged damping.",
+      "Leaden shard pressure.",
+      "Dull pewter-heaviness.",
+      "Stagnant copper-scent.",
+      "Bent structural beams.",
+      "Crushed stone debris.",
+      "Cold slag-pile."
+    ],
+    Glow: [
+      "Honed edge stillness.",
+      "Polished mirror flow.",
+      "Steady structural integrity.",
+      "Cool ceramic pulse.",
+      "Frictionless blade-glide.",
+      "Stable carbon-lattice.",
+      "Sleek obsidian-slide.",
+      "Perfectly balanced hilt.",
+      "Cool steel-surface.",
+      "Satin-finished metal."
+    ]
   }
 };
 
@@ -82,14 +302,12 @@ export class SensoryLexicon {
   static getSensoryTerm(coords: AffectCoordinates, archetype: Archetype): string {
     const quadrant = this.getQuadrant(coords);
     
-    // Check for archetype specific term
-    const override = ARCHETYPE_OVERRIDES[archetype][quadrant];
+    // Check for archetype specific terms
+    const overrides = ARCHETYPE_OVERRIDES[archetype][quadrant];
     
-    // Mix in base lexicon terms for variety if needed, 
-    // but the spec suggests using the archetype term.
-    // We'll return the override if available, otherwise a random one from the base.
-    
-    if (override) return override;
+    if (overrides && overrides.length > 0) {
+      return overrides[Math.floor(Math.random() * overrides.length)];
+    }
     
     const terms = BASE_LEXICON[quadrant];
     return terms[Math.floor(Math.random() * terms.length)];

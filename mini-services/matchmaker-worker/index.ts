@@ -48,24 +48,40 @@ async function processJobs() {
       const matches = await Matchmaker.findMatches(userProfile);
       
       // 3. Save results and complete
-      await prisma.matchmakerJob.update({
-        where: { id: job.id },
-        data: {
-          status: "completed",
-          progress: 100,
-          results: JSON.stringify(matches),
-          message: "I have found three souls that resonate with your frequency."
-        }
-      });
+      if (matches.length > 0) {
+        await prisma.matchmakerJob.update({
+          where: { id: job.id },
+          data: {
+            status: "completed",
+            progress: 100,
+            results: JSON.stringify(matches),
+            message: "I have found three souls that resonate with your frequency."
+          }
+        });
 
-      // Update user status
-      await prisma.user.update({
-        where: { id: job.userId },
-        data: { 
-            status: "inactive", // They need to pick a match now
-            inferredTraits: JSON.stringify(userProfile)
-        }
-      });
+        // Update user status
+        await prisma.user.update({
+          where: { id: job.userId },
+          data: { 
+              status: "inactive", // They need to pick a match now
+              inferredTraits: JSON.stringify(userProfile)
+          }
+        });
+      } else {
+        await prisma.matchmakerJob.update({
+          where: { id: job.id },
+          data: {
+            status: "failed",
+            progress: 100,
+            message: "I couldn't find a compatible match who met your needs and theirs. Let's try adjusting your profile."
+          }
+        });
+
+        await prisma.user.update({
+          where: { id: job.userId },
+          data: { status: "onboarding" } // Allow them to restart or adjust
+        });
+      }
     }
   }
 }
