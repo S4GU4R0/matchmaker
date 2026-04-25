@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
@@ -12,6 +13,7 @@ datasource db {
 model User {
   id                String            @id // Telegram ID
   username          String?
+  status            String            @default("onboarding") // onboarding, matching, active, inactive
   onboardingData    String?           // JSON string of user answers
   inferredTraits    String?           // JSON string (InferredUserProfile)
   relationships     Relationship[]
