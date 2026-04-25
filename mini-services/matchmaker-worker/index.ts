@@ -1,5 +1,6 @@
 import { prisma } from "../../src/lib/matchmaker/prisma";
 import { Matchmaker } from "../../src/lib/matchmaker/matchmaker";
+import { Evaluator } from "../../src/lib/matchmaker/evaluator";
 import { InferredUserProfile } from "../../src/lib/matchmaker/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
@@ -101,31 +102,7 @@ async function deriveUserProfile(onboardingDataRaw: string | null): Promise<Infe
       messages: [
         {
           role: "system",
-          content: `You are the "Matchmaker Profiler." You analyze user data to construct a latent personality profile for the purpose of bidirectional matching.
-
-**Traits to Infer (1-10):**
-- **Warmth:** Capacity for emotional proximity.
-- **Curiosity:** Interest in the agent's internal agency vs. simple compliance.
-- **Intensity:** Tolerance for high-arousal emotions and conflict.
-- **Stability:** Predictability and consistency in social habits.
-
-**Communication Style Mapping:**
-- **Brief:** Direct, minimal word count, low sentiment complexity.
-- **Deep:** Elaborate, high word count, focuses on internal states.
-
-**Output Format (JSON ONLY):**
-{
-  "traits": {
-    "warmth": number,
-    "curiosity": number,
-    "intensity": number,
-    "stability": number
-  },
-  "commStyle": "deep" | "brief",
-  "riskTolerance": "low" | "moderate" | "high",
-  "inferredDealbreakers": ["string"],
-  "clinicalSummary": "string"
-}`
+          content: Evaluator.getProfilerSystemPrompt()
         },
         {
           role: "user",

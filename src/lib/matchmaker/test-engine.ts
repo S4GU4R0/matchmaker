@@ -79,6 +79,23 @@ async function testCoreEngine() {
 
   const trait = Evaluator.calculateTrait(5, [{ weight: 1, impact: 2 }, { weight: 0.5, impact: -1 }]);
   console.log("Calculated Derived Trait (Warmth):", trait);
+
+  console.log("\n--- Testing Analyst Prompts ---");
+  const analystPrompt = Evaluator.getAnalystSystemPrompt("Astra", "Analytical", "User: Hello\nAgent: Hi");
+  console.log("Analyst Prompt (start):", analystPrompt.substring(0, 100) + "...");
+
+  const profilerPrompt = Evaluator.getProfilerSystemPrompt();
+  console.log("Profiler Prompt (start):", profilerPrompt.substring(0, 100) + "...");
+
+  const expressionistPrompt = Evaluator.getExpressionistSystemPrompt(
+    "Astra", 
+    "Analytical", 
+    { valence: 0.8, arousal: 0.5 }, 
+    "Radiant", 
+    "Acquaintance", 
+    ["Harmonic signal resonance", "Optimal clock synchronization"]
+  );
+  console.log("Expressionist Prompt (start):", expressionistPrompt.substring(0, 100) + "...");
 }
 
 testCoreEngine().catch(console.error);
