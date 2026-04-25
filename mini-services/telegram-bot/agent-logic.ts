@@ -54,11 +54,12 @@ export class AgentService {
         // 2. Generate Embedding (Mock for now, or real if key exists)
         const embedding = await this.getEmbedding(message);
 
-        // 3. Analyst LLM: Evaluate Interaction Quality
-        const quality = await this.analyzeQuality(message, soulData);
+        // 3. Analyst LLM: Evaluate Interaction Quality with Context
+        const context = await this.getConversationContext(relationship.id, 3);
+        const quality = await this.analyzeQuality(message, soulData, context);
 
         // 4. Agent LLM: Generate Response
-        const responseData = await this.generateResponse(message, soulData, relationship, currentAffect);
+        const responseData = await this.generateResponse(message, soulData, relationship, currentAffect, context);
 
         // 5. Process Message in Engine
         const result = await agent.processMessage(message, embedding, quality);
@@ -75,7 +76,13 @@ export class AgentService {
             });
         }
 
-        // 7. Update Relationship and User in DB
+        // 7. Dynamic Sensory Expression (Expressionist LLM)
+        let sensoryExpression = result.sensoryExpression;
+        if (process.env.OPENAI_API_KEY) {
+            sensoryExpression = await this.generateExpression(soulData, result.currentAffect, relationship);
+        }
+
+        // 8. Update Relationship and User in DB
         await prisma.relationship.update({
             where: { id: relationship.id },
             data: {
@@ -87,13 +94,13 @@ export class AgentService {
             }
         });
 
-        // 8. Voice Trigger
+        // 9. Voice Trigger
         let voiceBuffer = null;
         if (isVoice || result.affection > 80) {
             voiceBuffer = await VoiceService.generateVoice(responseData.text, soulData.archetype);
         }
 
-        // 9. Check if agent should leave
+        // 10. Check if agent should leave
         if (agent.shouldExit()) {
             await prisma.relationship.update({
                 where: { id: relationship.id },
@@ -105,7 +112,7 @@ export class AgentService {
             });
             return {
                 text: responseData.text,
-                sensory: result.sensoryExpression,
+                sensory: sensoryExpression,
                 voice: voiceBuffer,
                 terminated: true
             };
@@ -113,29 +120,23 @@ export class AgentService {
 
         return {
             text: responseData.text,
-            sensory: result.sensoryExpression,
+            sensory: sensoryExpression,
             voice: voiceBuffer,
             terminated: false
         };
     }
 
-    private static async getEmbedding(text: string): Promise<number[]> {
-        try {
-            if (process.env.OPENAI_API_KEY) {
-                const response = await openai.embeddings.create({
-                    model: "text-embedding-3-small",
-                    input: text,
-                });
-                return response.data[0].embedding;
-            }
-        } catch (e) {
-            console.error("Embedding error, using mock:", e);
-        }
-        // Mock embedding: 1536 floats
-        return new Array(1536).fill(0).map(() => Math.random());
+    private static async getConversationContext(relationshipId: string, limit: number): Promise<string> {
+        // In a real app, you'd fetch actual messages. For now, we'll fetch recent memories.
+        const memories = await prisma.memory.findMany({
+            where: { relationshipId },
+            orderBy: { createdAt: 'desc' },
+            take: limit
+        });
+        return memories.map(m => `User: ${m.content}\nAgent Interpretation: ${m.interpretation}`).reverse().join('\n---\n');
     }
 
-    private static async analyzeQuality(message: string, soul: Soul): Promise<InteractionQuality> {
+    private static async analyzeQuality(message: string, soul: Soul, context: string): Promise<InteractionQuality> {
         try {
             if (process.env.OPENAI_API_KEY) {
                 const response = await openai.chat.completions.create({
@@ -144,6 +145,9 @@ export class AgentService {
                         {
                             role: "system",
                             content: `You are the Matchmaker Analyst. Evaluate the user message in the context of their relationship with an AI agent (${soul.name}, Archetype: ${soul.archetype}).
+Context:
+${context}
+
 Assign a score from 0 to 5 for each dimension:
 - Depth: Moving beyond routine talk to core values or complex ideas.
 - Vulnerability: Willingness to reveal sensitive parts or take emotional risks.
@@ -151,17 +155,21 @@ Assign a score from 0 to 5 for each dimension:
 - Presence: Attentiveness to the agent's previous cues.
 
 Output strictly as JSON:
-{ "depth": number, "vulnerability": number, "respect": number, "presence": number }`
+{ "depth": number, "vulnerability": number, "respect": number, "presence": number, "reasoning": "string" }`
                         },
                         { role: "user", content: message }
                     ],
                     response_format: { type: "json_object" }
                 });
 
-                const scores = JSON.parse(response.choices[0].message.content || "{}");
+                const data = JSON.parse(response.choices[0].message.content || "{}");
                 return {
-                    ...scores,
-                    q: Evaluator.calculateQ(scores as any)
+                    depth: data.depth,
+                    vulnerability: data.vulnerability,
+                    respect: data.respect,
+                    presence: data.presence,
+                    reasoning: data.reasoning,
+                    q: Evaluator.calculateQ(data as any)
                 };
             }
         } catch (e) {
@@ -177,7 +185,8 @@ Output strictly as JSON:
         message: string, 
         soul: Soul, 
         relationship: any, 
-        affect: AffectCoordinates
+        affect: AffectCoordinates,
+        context: string
     ): Promise<{ text: string, interpretation?: string }> {
         try {
             if (process.env.OPENAI_API_KEY) {
@@ -190,6 +199,9 @@ Output strictly as JSON:
 Traits: ${JSON.stringify(soul.traits)}
 Current Relationship State: Trust ${relationship.trust}/100, Affection ${relationship.affection}/100.
 Current Emotional State (Valence/Arousal): ${affect.valence.toFixed(2)}, ${affect.arousal.toFixed(2)}.
+
+Context:
+${context}
 
 Your voice: Distinctive, authentic, and grounded in your archetype. You have real agency and boundaries.
 Objective: Respond to the user's message. Do not be overly compliant. Be yourself.
@@ -212,5 +224,56 @@ Output strictly as JSON:
             text: `(The connection is faint, but you feel ${soul.name}'s presence. They seem to be processing your words.)`,
             interpretation: "System failure or missing API key."
         };
+    }
+
+    private static async generateExpression(soul: Soul, affect: AffectCoordinates, relationship: any): Promise<string> {
+        try {
+            const quadrant = this.getQuadrant(affect);
+            const stage = this.getRelationshipStage(relationship);
+
+            const response = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [
+                    {
+                        role: "system",
+                        content: `You are the "Soul's Expressionist." Translate internal emotional data into a sensory expression.
+Agent: ${soul.name} (Archetype: ${soul.archetype})
+Affect: Valence ${affect.valence.toFixed(2)}, Arousal ${affect.arousal.toFixed(2)}
+Quadrant: ${quadrant}
+Relationship Stage: ${stage}
+
+Instruction:
+1. Select/generate a phrase that feels like an embodied sensation, not an emotion label.
+2. Use archetypal keywords:
+   - Analytical: Mechanical, digital, frequency, parity.
+   - Radiant: Light, heat, solar, thermal.
+   - Melancholic: Weight, water, decay, silt.
+   - Sensual: Tactile, skin, silk, viscous.
+   - Sharp: Metallic, geometric, razor, apex.
+
+Output ONLY the sensory expression string.`
+                    }
+                ]
+            });
+
+            return response.choices[0].message.content || "A faint hum in the processing layer.";
+        } catch (e) {
+            return "Processing...";
+        }
+    }
+
+    private static getQuadrant(affect: AffectCoordinates): string {
+        if (affect.valence >= 0 && affect.arousal >= 0) return 'Radiant';
+        if (affect.valence < 0 && affect.arousal >= 0) return 'Jagged';
+        if (affect.valence < 0 && affect.arousal < 0) return 'Heavy';
+        return 'Glow';
+    }
+
+    private static getRelationshipStage(relationship: any): string {
+        const h = (relationship.trust * 0.6) + (relationship.affection * 0.4);
+        if (h > 80) return 'Deep Resonance';
+        if (h > 60) return 'Vulnerability';
+        if (h > 30) return 'Emergent Trust';
+        return 'Acquaintance';
     }
 }
