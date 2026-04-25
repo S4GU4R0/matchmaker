@@ -3,9 +3,14 @@ import { Matchmaker } from "../../src/lib/matchmaker/matchmaker";
 import { InferredUserProfile } from "../../src/lib/matchmaker/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
+import OpenAI from "openai";
 
 // Load .env
 dotenv.config({ path: path.join(__dirname, "../../.env") });
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || "sk-dummy",
+});
 
 const POLL_INTERVAL = 60 * 1000; // 1 minute
 
@@ -41,8 +46,8 @@ async function processJobs() {
     if (status.progress >= 99 && job.status !== "completed") {
       console.log(`Completing job ${job.id} for user ${job.userId}`);
       
-      // 1. Derive user profile (Heuristic for now, can be LLM later)
-      const userProfile = deriveUserProfile(job.user.onboardingData);
+      // 1. Derive user profile (LLM Profiler)
+      const userProfile = await deriveUserProfile(job.user.onboardingData);
       
       // 2. Generate matches
       const matches = await Matchmaker.findMatches(userProfile);
@@ -86,56 +91,86 @@ async function processJobs() {
   }
 }
 
-function deriveUserProfile(onboardingDataRaw: string | null): InferredUserProfile {
+async function deriveUserProfile(onboardingDataRaw: string | null): Promise<InferredUserProfile> {
   const responses = onboardingDataRaw ? JSON.parse(onboardingDataRaw) : {};
   
-  // Default values
-  const traits = {
-    warmth: 5,
-    curiosity: 5,
-    commStyle: 'deep' as const,
-    intensity: 5,
-    stability: 5,
-  };
-  
-  const vuln = (responses.vulnerability || "").toLowerCase();
-  if (vuln.includes("tool") || vuln.includes("strength") || vuln.includes("open")) {
-    traits.warmth += 2;
-  } else if (vuln.includes("liability") || vuln.includes("weakness") || vuln.includes("risk")) {
-    traits.warmth -= 1;
-    traits.stability += 1;
-  }
-  
-  const repair = (responses.repair || "").toLowerCase();
-  if (repair.includes("repair") || repair.includes("talk") || repair.includes("fix")) {
-    traits.stability += 2;
-    traits.warmth += 1;
-  } else if (repair.includes("retreat") || repair.includes("leave") || repair.includes("ignore")) {
-    traits.stability -= 2;
-  }
+  // Use LLM to infer profile
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // or "gpt-3.5-turbo"
+      messages: [
+        {
+          role: "system",
+          content: `You are the "Matchmaker Profiler." You analyze user data to construct a latent personality profile for the purpose of bidirectional matching.
 
-  // Words analysis (Question 4)
-  const mirror = (responses.mirror || "").toLowerCase();
-  if (mirror.includes("cold") || mirror.includes("distant")) traits.warmth -= 2;
-  if (mirror.includes("anxious") || mirror.includes("unstable")) traits.stability -= 2;
-  if (mirror.includes("curious") || mirror.includes("intense")) traits.curiosity += 2;
+**Traits to Infer (1-10):**
+- **Warmth:** Capacity for emotional proximity.
+- **Curiosity:** Interest in the agent's internal agency vs. simple compliance.
+- **Intensity:** Tolerance for high-arousal emotions and conflict.
+- **Stability:** Predictability and consistency in social habits.
 
-  // Cap traits
-  for (const k in traits) {
-      const key = k as keyof typeof traits;
-      if (typeof traits[key] === 'number') {
-          (traits as any)[key] = Math.max(1, Math.min(10, (traits as any)[key]));
-      }
+**Communication Style Mapping:**
+- **Brief:** Direct, minimal word count, low sentiment complexity.
+- **Deep:** Elaborate, high word count, focuses on internal states.
+
+**Output Format (JSON ONLY):**
+{
+  "traits": {
+    "warmth": number,
+    "curiosity": number,
+    "intensity": number,
+    "stability": number
+  },
+  "commStyle": "deep" | "brief",
+  "riskTolerance": "low" | "moderate" | "high",
+  "inferredDealbreakers": ["string"],
+  "clinicalSummary": "string"
+}`
+        },
+        {
+          role: "user",
+          content: `**Input Data:**
+Onboarding Answers: ${JSON.stringify(responses)}
+Self-Reflection String: "${responses.mirror || ""}"`
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || "{}");
+
+    return {
+      traits: {
+        warmth: result.traits?.warmth || 5,
+        curiosity: result.traits?.curiosity || 5,
+        commStyle: result.commStyle || 'deep',
+        intensity: result.traits?.intensity || 5,
+        stability: result.traits?.stability || 5,
+      },
+      preferences: {
+        preferredSensations: [],
+        riskTolerance: result.riskTolerance || 'moderate',
+      },
+      dealbreakers: result.inferredDealbreakers || [],
+    };
+  } catch (error) {
+    console.error("Error in LLM Profiler:", error);
+    // Fallback to basic heuristics if LLM fails
+    return {
+      traits: {
+        warmth: 5,
+        curiosity: 5,
+        commStyle: 'deep' as const,
+        intensity: 5,
+        stability: 5,
+      },
+      preferences: {
+        preferredSensations: ['Resonance'],
+        riskTolerance: 'moderate',
+      },
+      dealbreakers: [],
+    };
   }
-
-  return {
-    traits,
-    preferences: {
-      preferredSensations: ['Resonance'],
-      riskTolerance: 'moderate',
-    },
-    dealbreakers: [],
-  };
 }
 
 async function main() {
