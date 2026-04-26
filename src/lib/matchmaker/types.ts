@@ -46,6 +46,8 @@ export interface Soul {
 
 export interface MemoryEntry {
   id: string;
+  userId: string;
+  soulId: string;
   relationshipId: string;
   content: string;
   interpretation: string;
