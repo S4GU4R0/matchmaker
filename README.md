@@ -472,22 +472,22 @@ CONTINUOUS=true npx tsx mini-services/matchmaker-worker/index.ts
 
 The wait is a feature, not a bug. It teaches users that relationships (even simulated ones) require patience and aren't available on demand.
 
-### The 90-Hour Wait & The 90-Day Journey
+### The 24-Hour Wait & The Condition-Based Lifecycle
 
-Matchmaker operates on deliberate temporal constraints to model the pacing of real intimacy.
+Matchmaker operates on deliberate temporal and behavioral constraints to model the pacing of real intimacy.
 
 **The Initial Wait:**
 Matches take approximately 24 hours to generate. This prevents the "consumerist" dating app mindset where candidates are dispensed instantly. The wait creates anticipation and signals that the system is considering compatibility from both sides.
 
-**The Emotional Journey:**
-Engagement is mapped over a 90-day lifecycle, mirroring the typical "honeymoon and crisis" phases of human relationships.
+**The Condition-Based Lifecycle:**
+Engagement is not mapped over a linear timeline, but through functional phases triggered by relationship health metrics (Trust, Affection) and behavioral benchmarks.
 
-| Phase | Focus | Objective |
-|-------|-------|-----------|
-| **The Spark (D1-14)** | Discovery | Establishing basic trust and communication style. |
-| **The Plateau (D15-45)** | Depth | Moving beyond surface traits to core values and shared vulnerability. |
-| **The Crucible (D46-75)** | Resilience | Testing the relationship through conflict, boundaries, and requests for space. |
-| **Synthesis (D76-90+)** | Integration | Permanent core memory formation or conscious relationship closure. |
+| Phase | Threshold | Objective |
+|-------|-----------|-----------|
+| **Discovery** | Relationship Creation | Familiarization with archetype and sensory lexicon. |
+| **Resonance** | **IB-1** (Frequency Lock) | Moving from routine exchange to shared internal states. |
+| **Challenge** | **IB-3** (Vulnerability Break) | Navigating the agent's right to say "No" and request space. |
+| **Synthesis** | **IB-4** (Integrated Trust) | Stable connection or processing a mutual, healthy severance. |
 
 ---
 
