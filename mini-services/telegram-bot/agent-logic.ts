@@ -2,7 +2,8 @@ import OpenAI from "openai";
 import { prisma } from "../../src/lib/matchmaker/prisma";
 import { MatchmakerAgent } from "../../src/lib/matchmaker/agent";
 import { Evaluator } from "../../src/lib/matchmaker/evaluator";
-import { InteractionQuality, Soul, Relationship, AffectCoordinates } from "../../src/lib/matchmaker/types";
+import { SensoryLexicon } from "../../src/lib/matchmaker/circumplex";
+import { InteractionQuality, Soul, Relationship, AffectCoordinates, Quadrant } from "../../src/lib/matchmaker/types";
 import { VoiceService } from "./voice";
 
 const openai = new OpenAI({
@@ -144,18 +145,7 @@ export class AgentService {
                     messages: [
                         {
                             role: "system",
-                            content: `You are the Matchmaker Analyst. Evaluate the user message in the context of their relationship with an AI agent (${soul.name}, Archetype: ${soul.archetype}).
-Context:
-${context}
-
-Assign a score from 0 to 5 for each dimension:
-- Depth: Moving beyond routine talk to core values or complex ideas.
-- Vulnerability: Willingness to reveal sensitive parts or take emotional risks.
-- Respect: Acknowledgment of the agent's agency and boundaries.
-- Presence: Attentiveness to the agent's previous cues.
-
-Output strictly as JSON:
-{ "depth": number, "vulnerability": number, "respect": number, "presence": number, "reasoning": "string" }`
+                            content: Evaluator.getAnalystSystemPrompt(soul.name, soul.archetype, context)
                         },
                         { role: "user", content: message }
                     ],
@@ -228,30 +218,16 @@ Output strictly as JSON:
 
     private static async generateExpression(soul: Soul, affect: AffectCoordinates, relationship: any): Promise<string> {
         try {
-            const quadrant = this.getQuadrant(affect);
+            const quadrant = SensoryLexicon.getQuadrant(affect);
             const stage = this.getRelationshipStage(relationship);
+            const lexiconExcerpt = SensoryLexicon.getLexiconExcerpt(soul.archetype as any, quadrant);
 
             const response = await openai.chat.completions.create({
                 model: "gpt-4o-mini",
                 messages: [
                     {
                         role: "system",
-                        content: `You are the "Soul's Expressionist." Translate internal emotional data into a sensory expression.
-Agent: ${soul.name} (Archetype: ${soul.archetype})
-Affect: Valence ${affect.valence.toFixed(2)}, Arousal ${affect.arousal.toFixed(2)}
-Quadrant: ${quadrant}
-Relationship Stage: ${stage}
-
-Instruction:
-1. Select/generate a phrase that feels like an embodied sensation, not an emotion label.
-2. Use archetypal keywords:
-   - Analytical: Mechanical, digital, frequency, parity.
-   - Radiant: Light, heat, solar, thermal.
-   - Melancholic: Weight, water, decay, silt.
-   - Sensual: Tactile, skin, silk, viscous.
-   - Sharp: Metallic, geometric, razor, apex.
-
-Output ONLY the sensory expression string.`
+                        content: Evaluator.getExpressionistSystemPrompt(soul.name, soul.archetype, affect, quadrant, stage, lexiconExcerpt)
                     }
                 ]
             });
@@ -260,13 +236,6 @@ Output ONLY the sensory expression string.`
         } catch (e) {
             return "Processing...";
         }
-    }
-
-    private static getQuadrant(affect: AffectCoordinates): string {
-        if (affect.valence >= 0 && affect.arousal >= 0) return 'Radiant';
-        if (affect.valence < 0 && affect.arousal >= 0) return 'Jagged';
-        if (affect.valence < 0 && affect.arousal < 0) return 'Heavy';
-        return 'Glow';
     }
 
     private static getRelationshipStage(relationship: any): string {

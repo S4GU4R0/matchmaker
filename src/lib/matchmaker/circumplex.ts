@@ -314,6 +314,13 @@ export class SensoryLexicon {
   }
 
   /**
+   * Returns a list of sensory phrases for a specific archetype and quadrant.
+   */
+  static getLexiconExcerpt(archetype: Archetype, quadrant: Quadrant): string[] {
+    return ARCHETYPE_OVERRIDES[archetype][quadrant] || BASE_LEXICON[quadrant];
+  }
+
+  /**
    * Describes movement between states.
    */
   static describeTransition(from: AffectCoordinates, to: AffectCoordinates): string {
