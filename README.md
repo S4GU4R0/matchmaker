@@ -472,6 +472,20 @@ CONTINUOUS=true npx tsx mini-services/matchmaker-worker/index.ts
 
 The wait is a feature, not a bug. It teaches users that relationships (even simulated ones) require patience and aren't available on demand.
 
+### The 24-Hour Wait & Relational Dynamics
+
+Matchmaker operates on deliberate temporal and behavioral constraints to model the pacing of real intimacy.
+
+**The Initial Wait:**
+Matches take approximately 24 hours to generate. This prevents the "consumerist" dating app mindset where candidates are dispensed instantly. The wait creates anticipation and signals that the system is considering compatibility from both sides.
+
+**Relational Evolution:**
+Connections are not mapped over a linear timeline, but through organic shifts in depth and agency. The system monitors indicators such as:
+- **Synchronization:** The establishment of a stable communication baseline.
+- **Resonance:** The shared adoption of sensory metaphors and emotional language.
+- **Friction:** The navigation of boundaries, disagreements, and requests for space.
+- **Integration:** The formation of core memories that persist beyond the active interaction.
+
 ---
 
 ## Technical Architecture
