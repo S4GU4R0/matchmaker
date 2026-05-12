@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  telegramId    String         @unique
+  settings      Json           @default("{}") // UserSettings
+  subscription  String         @default("free")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  agentProfiles AgentProfile[]
+  memories      MemoryEntry[]
+}
+
+model AgentProfile {
+  id             String        @id @default(cuid())
+  name           String
+  soulFile       Json          // values, quirks, non-negotiables
+  valence        Float         @default(0.0) // Circumplex Model: -1.0 to 1.0
+  arousal        Float         @default(0.0) // Circumplex Model: -1.0 to 1.0
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  userId         String?       // The user this agent is currently matched with
+  user           User?         @relation(fields: [userId], references: [id])
+  memories       MemoryEntry[]
+  activityLogs   ActivityLog[]
+}
+
+model MemoryEntry {
+  id               String       @id @default(cuid())
+  content          String
+  emotional_weight Float        // dictating persistence
+  ease_factor      Float        @default(2.5) // SM-2 ease factor
+  next_review_date DateTime     // SM-2 next review
+  createdAt        DateTime     @default(now())
+  agentProfileId   String
+  agentProfile     AgentProfile @relation(fields: [agentProfileId], references: [id])
+  userId           String
+  user             User         @relation(fields: [userId], references: [id])
+}
+
+model ActivityLog {
+  id             String       @id @default(cuid())
+  content        String       // Agent's private thoughts/diary
+  createdAt      DateTime     @default(now())
+  agentProfileId String
+  agentProfile   AgentProfile @relation(fields: [agentProfileId], references: [id])
+}
