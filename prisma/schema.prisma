@@ -36,16 +36,16 @@ model AgentProfile {
 }
 
 model MemoryEntry {
-  id              String       @id @default(cuid())
-  content         String
-  emotionalWeight Float        // dictating persistence
-  easeFactor      Float        @default(2.5) // SM-2 ease factor
-  nextReviewDate  DateTime     // SM-2 next review
-  createdAt       DateTime     @default(now())
-  agentProfileId  String
-  agentProfile    AgentProfile @relation(fields: [agentProfileId], references: [id])
-  userId          String
-  user            User         @relation(fields: [userId], references: [id])
+  id               String       @id @default(cuid())
+  content          String
+  emotional_weight Float        // dictating persistence
+  ease_factor      Float        @default(2.5) // SM-2 ease factor
+  next_review_date DateTime     // SM-2 next review
+  createdAt        DateTime     @default(now())
+  agentProfileId   String
+  agentProfile     AgentProfile @relation(fields: [agentProfileId], references: [id])
+  userId           String
+  user             User         @relation(fields: [userId], references: [id])
 }
 
 model ActivityLog {
