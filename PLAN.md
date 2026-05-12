@@ -103,6 +103,7 @@ All user management MUST be implemented as conversational flows or inline button
 
 ## Progress Log: Building in Public
 
+*   **2026-05-12**: Next.js 16 (App Router) landing page set up with Tailwind CSS and basic marketing content.
 *   **2026-05-12**: Prisma schema implemented with User, AgentProfile, MemoryEntry, and ActivityLog models.
 *   **2026-05-11**: Initial ExecPlan drafted based on the "Matchmaker" philosophical essay.
 *   **2026-05-11**: Modular architecture defined for "AI Business" agent hand-off.
@@ -117,6 +118,8 @@ All user management MUST be implemented as conversational flows or inline button
 
 | Date | Decision | Rationale | Alternatives Considered |
 | :--- | :--- | :--- | :--- |
+| 2026-05-12 | Use Next.js 16 (App Router) as specified. | Aligns with PLAN.md requirements. | Next.js 15. |
+| 2026-05-12 | Change package.json to type: module. | Next.js 16/Turbopack with ESM imports requires this for clean integration. | CommonJS. |
 | 2026-05-12 | Use cuid() for IDs and telegramId for auth. | cuid() is standard for Prisma/PostgreSQL; telegramId is necessary for bot integration. | UUIDs, incrementing integers. |
 | 2026-05-11 | Explicit "Agent Protocol" section added. | User expressed concern about agents taking liberties; this reinforces SSOT and micromanagement. | Relying solely on the inherent nature of the ExecPlan template. |
 | 2026-05-11 | Fly.io selected for deployment. | Provides a unified, persistent environment for all components (frontend, API, bot, workers), simplifying management and aligning with indie SaaS ethos. | Vercel (for frontend/API) + separate Node.js host (for bot/workers) - more complex, less unified. |
