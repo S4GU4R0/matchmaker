@@ -103,6 +103,7 @@ All user management MUST be implemented as conversational flows or inline button
 
 ## Progress Log: Building in Public
 
+*   **2026-05-12**: Telegram bot initialized with Grammy.js and basic command structure.
 *   **2026-05-12**: Next.js 16 (App Router) landing page set up with Tailwind CSS and basic marketing content.
 *   **2026-05-12**: Prisma schema implemented with User, AgentProfile, MemoryEntry, and ActivityLog models.
 *   **2026-05-11**: Initial ExecPlan drafted based on the "Matchmaker" philosophical essay.
@@ -118,6 +119,8 @@ All user management MUST be implemented as conversational flows or inline button
 
 | Date | Decision | Rationale | Alternatives Considered |
 | :--- | :--- | :--- | :--- |
+| 2026-05-12 | Use Grammy.js for the Telegram bot. | Lightweight, TypeScript-first, and fits the "indie SaaS" vibe. | Telegraf, node-telegram-bot-api. |
+| 2026-05-12 | Use tsx to run the bot. | Allows running TypeScript files directly without a separate build step, simplifying development. | tsc + node, ts-node. |
 | 2026-05-12 | Use Next.js 16 (App Router) as specified. | Aligns with PLAN.md requirements. | Next.js 15. |
 | 2026-05-12 | Change package.json to type: module. | Next.js 16/Turbopack with ESM imports requires this for clean integration. | CommonJS. |
 | 2026-05-12 | Use cuid() for IDs and telegramId for auth. | cuid() is standard for Prisma/PostgreSQL; telegramId is necessary for bot integration. | UUIDs, incrementing integers. |
