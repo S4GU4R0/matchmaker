@@ -47,7 +47,7 @@ Agents assigned to this project MUST adhere to the following constraints. Failur
 
 | Component | Provider | Documentation / Implementation Notes |
 | :--- | :--- | :--- |
-| **LLM (AI Chat)** | **puter.js** | Use `puter.ai.chat(messages, options)`. Default model: `gpt-4o-mini`. No API keys required. [Docs](https://docs.puter.com/AI/chat/) |
+| **LLM (AI Chat)** | **puter.js** | Use `puter.ai.chat(messages, options)`. Default model: `claude-3-5-sonnet`. No API keys required. [Docs](https://docs.puter.com/AI/chat/) |
 | **TTS (Voice)** | **c.ai (Unofficial)** | Use a lightweight Node.js wrapper for Character.AI voice generation. Focus on high-quality, expressive voices. |
 
 #### Puter.js Implementation Detail:
@@ -57,7 +57,7 @@ const response = await puter.ai.chat([
   { role: "system", content: "You are an agent with genuine agency..." },
   { role: "user", content: "Hello." }
 ], {
-  model: 'gpt-4o-mini',
+  model: 'claude-3-5-sonnet',
   temperature: 0.7
 });
 ```
@@ -103,6 +103,7 @@ All user management MUST be implemented as conversational flows or inline button
 
 ## Progress Log: Building in Public
 
+*   **2026-05-12**: Puter.js integration framework created (ai-service.ts, emotional-engine.ts). System prompts reinforce "Genuine Agency" concept.
 *   **2026-05-12**: Telegram bot initialized with Grammy.js and basic command structure.
 *   **2026-05-12**: Next.js 16 (App Router) landing page set up with Tailwind CSS and basic marketing content.
 *   **2026-05-12**: Prisma schema implemented with User, AgentProfile, MemoryEntry, and ActivityLog models.
@@ -119,11 +120,14 @@ All user management MUST be implemented as conversational flows or inline button
 
 | Date | Decision | Rationale | Alternatives Considered |
 | :--- | :--- | :--- | :--- |
+| 2026-05-12 | Switched default LLM to Claude 3.5 Sonnet via Puter.js. | Owner requested to avoid defaulting to OpenAI models. | gpt-4o-mini. |
 | 2026-05-12 | Use Grammy.js for the Telegram bot. | Lightweight, TypeScript-first, and fits the "indie SaaS" vibe. | Telegraf, node-telegram-bot-api. |
 | 2026-05-12 | Use tsx to run the bot. | Allows running TypeScript files directly without a separate build step, simplifying development. | tsc + node, ts-node. |
 | 2026-05-12 | Use Next.js 16 (App Router) as specified. | Aligns with PLAN.md requirements. | Next.js 15. |
 | 2026-05-12 | Change package.json to type: module. | Next.js 16/Turbopack with ESM imports requires this for clean integration. | CommonJS. |
 | 2026-05-12 | Use cuid() for IDs and telegramId for auth. | cuid() is standard for Prisma/PostgreSQL; telegramId is necessary for bot integration. | UUIDs, incrementing integers. |
+| 2026-05-12 | Use axios for HTTP API calls instead of Puter.js SDK. | Puter.js SDK (`puter` and `puterjs` npm packages) appear to be browser-only or type definition wrappers, not suitable for server-side Node.js. HTTP API via axios provides server-side compatibility. | Puter.js SDK (browser-only), custom fetch implementation. |
+| 2026-05-12 | Implement fallback endpoint logic for Puter API. | Puter.js API endpoints are not well-documented; implemented multiple endpoint attempts to handle uncertainty. | Single hardcoded endpoint. |
 | 2026-05-11 | Explicit "Agent Protocol" section added. | User expressed concern about agents taking liberties; this reinforces SSOT and micromanagement. | Relying solely on the inherent nature of the ExecPlan template. |
 | 2026-05-11 | Fly.io selected for deployment. | Provides a unified, persistent environment for all components (frontend, API, bot, workers), simplifying management and aligning with indie SaaS ethos. | Vercel (for frontend/API) + separate Node.js host (for bot/workers) - more complex, less unified. |
 | 2026-05-11 | `puter.js` for LLM and `c.ai` for TTS. | Free tiers for MVP, aligns with lean indie SaaS approach. | OpenAI, ElevenLabs, etc. - higher cost, less aligned with free MVP. |
@@ -133,6 +137,8 @@ All user management MUST be implemented as conversational flows or inline button
 
 | Date | Observation | Impact / Insight |
 | :--- | :--- |
+| 2026-05-12 | Puter.js npm packages (`puter` and `puterjs`) appear to be browser-only SDKs or type definition wrappers, not suitable for server-side Node.js. | Requires HTTP API integration via axios instead of direct SDK usage. The API endpoints are not well-documented, requiring fallback logic for multiple possible endpoints. |
+| 2026-05-12 | Puter.js API documentation mentions `puter.ai.chat()` but npm packages don't export this for server-side use. | Need to implement HTTP API calls directly to Puter's REST endpoints, with proper error handling and response format flexibility. |
 | 2026-05-11 | User emphasized "micromanagey" approach due to past agent experiences. | Confirms the need for explicit, highly detailed instructions and guardrails to prevent feature creep and philosophical drift. |
 | 2026-05-11 | User provided specific "what not to do" example (GitHub PR). | Highlighted the risk of agents introducing unaligned features (e.g., "relationship completion arc") and the importance of maintaining philosophical integrity. |
 | 2026-05-11 | User has Fly.io access. | This simplifies deployment strategy significantly, allowing for a more cohesive and persistent architecture than a Vercel + separate host setup. |
